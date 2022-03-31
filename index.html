@@ -2,52 +2,36 @@
 <html>
   <head>
     <title>stars-canvas</title>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div style="
-      display: flex; flex-direction: column; 
-      align-items: center; gap: 20px; padding: 20px;
-    ">
+    <div class="container">
       <canvas id="fieldCanvas" width="600" height="50"></canvas>
+      <p class="currentColor">
+        Текущий цвет: <span id="hexText"></span>
+      </p>
       <canvas id="starsCanvas" width="600" height="600"></canvas>
     </div>
 
-    <script>
-      var fieldCanvas = document.getElementById("fieldCanvas");
-      var starsCanvas = document.getElementById("starsCanvas");
+    <script src="js/drawStar.js"></script>
+    <script src="js/utils.js"></script>
 
-      var fieldCtx = fieldCanvas.getContext("2d");
-      fieldCtx.fillStyle = "#eee";
+    <script>
+      const fieldCanvas = document.getElementById("fieldCanvas");
+      const starsCanvas = document.getElementById("starsCanvas");
+      const hexText = document.getElementById("hexText");
+      let hex = "#eeeeee";
+
+      function updateHexText() { hexText.textContent = hex }
+      updateHexText();
+
+      const fieldCtx = fieldCanvas.getContext("2d");
+      fieldCtx.fillStyle = hex;
       fieldCtx.fillRect(0, 0, 600, 600);
       
-      var starsCtx = starsCanvas.getContext("2d");
+      const starsCtx = starsCanvas.getContext("2d");
       starsCtx.fillStyle = "#eee";
       starsCtx.fillRect(0, 0, 600, 600);
-
-      function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color) {
-        var rot = Math.PI / 2 * 3;
-        var x = cx;
-        var y = cy;
-        var step = Math.PI / spikes;
-
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - outerRadius);
-
-        for (i = 0; i < spikes; i++){
-          x = cx + Math.cos(rot) * outerRadius;
-          y = cy + Math.sin(rot) * outerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-
-          x = cx + Math.cos(rot) * innerRadius;
-          y = cy + Math.sin(rot) * innerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-        }
-
-        ctx.fillStyle = color;
-        ctx.fill();
-      }
 
       drawStar(starsCtx, 100, 250, 5, 70, 30, "red");
       drawStar(starsCtx, 300, 150, 5, 70, 30, "blue");
@@ -55,38 +39,17 @@
       drawStar(starsCtx, 400, 450, 5, 70, 30, "yellow");
       drawStar(starsCtx, 200, 450, 5, 70, 30, "black");
 
-      function findCursorPos(obj) {
-        var curLeft = 0, curTop = 0;
-
-        if (obj.offsetParent) {
-          do {
-            curLeft += obj.offsetLeft;
-            curTop += obj.offsetTop;
-          } 
-          while (obj = obj.offsetParent);
-
-          return { x: curLeft, y: curTop };
-        }
-
-        return undefined;
-      }
-
-      function rgbToHex(r, g, b) {
-        if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
-        
-        return ((r << 16) | (g << 8) | b).toString(16);
-      }
-
       starsCanvas.addEventListener("click", e => {
-        var pos = findCursorPos(starsCanvas);
-        var x = e.pageX - pos.x;
-        var y = e.pageY - pos.y;
-        var coord = "x=" + x + ", y=" + y;
-        var p = starsCtx.getImageData(x, y, 1, 1).data;
-        var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6);
+        const pos = findCursorPos(starsCanvas);
+        const x = e.pageX - pos.x;
+        const y = e.pageY - pos.y;
+        const rgb = starsCtx.getImageData(x, y, 1, 1).data;
+        hex = "#" + ("000000" + rgbToHex(rgb[0], rgb[1], rgb[2])).slice(-6);
 
         fieldCtx.fillStyle = hex;
         fieldCtx.fillRect(0, 0, 600, 600);
+
+        updateHexText();
       });
     </script>
   </body>
